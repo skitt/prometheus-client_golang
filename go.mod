@@ -1,12 +1,11 @@
 module github.com/prometheus/client_golang
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/beorn7/perks v1.0.1
 	github.com/cespare/xxhash/v2 v2.3.0
 	github.com/google/go-cmp v0.7.0
-	github.com/json-iterator/go v1.1.12
 	github.com/klauspost/compress v1.20.1
 	github.com/kylelemons/godebug v1.1.0
 	github.com/prometheus/client_model v0.6.3
@@ -22,8 +21,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/pandatix/go-abnf v0.5.1 // indirect

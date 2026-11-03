@@ -15,7 +15,7 @@ package v1
 
 import (
 	"context"
-	gojson "encoding/json"
+	"encoding/json"
 	"errors"
 	"io"
 	"math"
@@ -27,8 +27,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 
 	"github.com/prometheus/common/model"
 )
@@ -74,7 +72,7 @@ func (c *apiTestClient) Do(_ context.Context, req *http.Request, into any) (*htt
 		c.Errorf("unexpected request method: want %s, got %s", test.reqMethod, req.Method)
 	}
 
-	b, err := gojson.Marshal(test.inRes)
+	b, err := json.Marshal(test.inRes)
 	if err != nil {
 		c.Fatal(err)
 	}
@@ -91,9 +89,9 @@ func (c *apiTestClient) Do(_ context.Context, req *http.Request, into any) (*htt
 	if test.inErr == nil {
 		// In non-error cases, unmarshal into the target object.
 		if into == nil {
-			into = &gojson.RawMessage{}
+			into = &json.RawMessage{}
 		}
-		if err := gojson.Unmarshal(b, into); err != nil {
+		if err := json.Unmarshal(b, into); err != nil {
 			return nil, nil, nil, err
 		}
 	}
@@ -1596,7 +1594,7 @@ func (c *testClient) Do(ctx context.Context, req *http.Request) (*http.Response,
 	case string:
 		b = []byte(v)
 	default:
-		b, err = gojson.Marshal(v)
+		b, err = json.Marshal(v)
 		if err != nil {
 			c.Fatal(err)
 		}
@@ -1615,7 +1613,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusUnprocessableEntity,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`null`),
+				Data:      json.RawMessage(`null`),
 				ErrorType: ErrBadData,
 				Error:     "failed",
 			},
@@ -1629,7 +1627,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusUnprocessableEntity,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 			},
@@ -1661,7 +1659,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusBadRequest,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`null`),
+				Data:      json.RawMessage(`null`),
 				ErrorType: ErrBadData,
 				Error:     "end timestamp must not be before start time",
 			},
@@ -1683,7 +1681,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusUnprocessableEntity,
 			response: &apiResponse{
 				Status: "success",
-				Data:   gojson.RawMessage(`"test"`),
+				Data:   json.RawMessage(`"test"`),
 			},
 			expectedErr: &Error{
 				Type: ErrBadResponse,
@@ -1694,7 +1692,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusUnprocessableEntity,
 			response: &apiResponse{
 				Status:    "success",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 			},
@@ -1707,7 +1705,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusOK,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 			},
@@ -1720,7 +1718,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusOK,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 				Warnings:  []string{"a"},
@@ -1735,7 +1733,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusOK,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 				Infos:     []string{"b"},
@@ -1750,7 +1748,7 @@ func TestAPIClientDo(t *testing.T) {
 			code: http.StatusOK,
 			response: &apiResponse{
 				Status:    "error",
-				Data:      gojson.RawMessage(`"test"`),
+				Data:      json.RawMessage(`"test"`),
 				ErrorType: ErrTimeout,
 				Error:     "timed out",
 				Warnings:  []string{"a"},
@@ -1778,7 +1776,7 @@ func TestAPIClientDo(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			tc.ch <- test
 
-			into := gojson.RawMessage{}
+			into := json.RawMessage{}
 			_, warnings, infos, err := client.Do(context.Background(), tc.req, &into)
 			body := []byte(into)
 
@@ -1904,7 +1902,7 @@ func TestSamplesJSONSerialization(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.expected, func(t *testing.T) {
-			b, err := gojson.Marshal(test.point)
+			b, err := json.Marshal(test.point)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1916,11 +1914,11 @@ func TestSamplesJSONSerialization(t *testing.T) {
 			// can do a string compare, otherwise Nan values don't show equivalence
 			// properly.
 			var sp model.SamplePair
-			if err = jsoniter.Unmarshal(b, &sp); err != nil {
+			if err = json.Unmarshal(b, &sp); err != nil {
 				t.Fatal(err)
 			}
 
-			b, err = gojson.Marshal(sp)
+			b, err = json.Marshal(sp)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -2009,7 +2007,7 @@ func TestHistogramJSONSerialization(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			b, err := gojson.Marshal(test.point)
+			b, err := json.Marshal(test.point)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -2021,11 +2019,11 @@ func TestHistogramJSONSerialization(t *testing.T) {
 			// can do a string compare, otherwise NaN values don't show equivalence
 			// properly.
 			var sp model.SampleHistogramPair
-			if err = jsoniter.Unmarshal(b, &sp); err != nil {
+			if err = json.Unmarshal(b, &sp); err != nil {
 				t.Fatal(err)
 			}
 
-			b, err = gojson.Marshal(sp)
+			b, err = json.Marshal(sp)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -2067,7 +2065,7 @@ func TestSampleStreamJSONSerialization(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			b, err := jsoniter.Marshal(test.stream)
+			b, err := json.Marshal(test.stream)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -2076,7 +2074,7 @@ func TestSampleStreamJSONSerialization(t *testing.T) {
 			}
 
 			var stream model.SampleStream
-			if err = jsoniter.Unmarshal(b, &stream); err != nil {
+			if err = json.Unmarshal(b, &stream); err != nil {
 				t.Fatal(err)
 			}
 
@@ -2132,16 +2130,16 @@ func TestDoGetFallback(t *testing.T) {
 	// Start a local HTTP server.
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		req.ParseForm()
-		testResp, _ := gojson.Marshal(&testResponse{
+		testResp, _ := json.Marshal(&testResponse{
 			Values: req.Form.Encode(),
 			Method: req.Method,
 		})
 
 		apiResp := &apiResponse{
-			Data: gojson.RawMessage(testResp),
+			Data: json.RawMessage(testResp),
 		}
 
-		body, _ := gojson.Marshal(apiResp)
+		body, _ := json.Marshal(apiResp)
 
 		if req.Method == http.MethodPost {
 			if req.URL.Path == "/blockPost403" {
